@@ -64,10 +64,10 @@ contract SafeSend is Initializable, PausableUpgradeable, AccessControlUpgradeabl
     );
     event FeeConfigUpdated(address indexed feeRecipient, uint256 feeBps);
 
-    mapping(uint256 => SafeSendTransfer) private transfers;
-    uint256 public nextTransferId;
-    address public feeRecipient;
-    uint256 public feeBps;
+    mapping(uint256 => SafeSendTransfer) private _transfers;
+    uint256 public _nextTransferId;
+    address public _feeRecipient;
+    uint256 public _feeBps;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -111,10 +111,10 @@ contract SafeSend is Initializable, PausableUpgradeable, AccessControlUpgradeabl
             revert InvalidReleaseTime();
         }
 
-        transferId = nextTransferId++;
+        transferId = _nextTransferId++;
         uint256 feeAmount = previewFee(amount);
 
-        transfers[transferId] = SafeSendTransfer({
+        _transfers[transferId] = SafeSendTransfer({
             sender: msg.sender,
             recipient: recipient,
             token: token,
@@ -169,7 +169,7 @@ contract SafeSend is Initializable, PausableUpgradeable, AccessControlUpgradeabl
         IERC20 token = IERC20(transfer.token);
 
         if (transfer.feeAmount > 0) {
-            token.safeTransfer(feeRecipient, transfer.feeAmount);
+            token.safeTransfer(_feeRecipient, transfer.feeAmount);
         }
 
         token.safeTransfer(transfer.recipient, recipientAmount);
@@ -188,7 +188,7 @@ contract SafeSend is Initializable, PausableUpgradeable, AccessControlUpgradeabl
         view
         returns (SafeSendTransfer memory)
     {
-        SafeSendTransfer memory transfer = transfers[transferId];
+        SafeSendTransfer memory transfer = _transfers[transferId];
         if (transfer.sender == address(0)) {
             revert TransferNotFound();
         }
@@ -206,7 +206,7 @@ contract SafeSend is Initializable, PausableUpgradeable, AccessControlUpgradeabl
 
     /// @notice Returns the fee that would be charged for a transfer amount.
     function previewFee(uint256 amount) public view returns (uint256) {
-        return (amount * feeBps) / BPS_DENOMINATOR;
+        return (amount * _feeBps) / BPS_DENOMINATOR;
     }
 
     function _setFeeConfig(address feeRecipient_, uint256 feeBps_) internal {
@@ -217,8 +217,8 @@ contract SafeSend is Initializable, PausableUpgradeable, AccessControlUpgradeabl
             revert InvalidFeeBps();
         }
 
-        feeRecipient = feeRecipient_;
-        feeBps = feeBps_;
+        _feeRecipient = feeRecipient_;
+        _feeBps = feeBps_;
 
         emit FeeConfigUpdated(feeRecipient_, feeBps_);
     }
@@ -226,7 +226,7 @@ contract SafeSend is Initializable, PausableUpgradeable, AccessControlUpgradeabl
     function _getPendingTransfer(
         uint256 transferId
     ) internal view returns (SafeSendTransfer storage transfer) {
-        transfer = transfers[transferId];
+        transfer = _transfers[transferId];
         if (transfer.sender == address(0)) {
             revert TransferNotFound();
         }
