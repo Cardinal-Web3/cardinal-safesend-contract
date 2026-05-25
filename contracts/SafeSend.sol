@@ -34,8 +34,7 @@ contract SafeSend is Initializable, PausableUpgradeable, AccessControlUpgradeabl
         SafeSendStatus status;
     }
 
-    error InvalidRecipient();
-    error InvalidToken();
+    error InvalidAddress();
     error InvalidAmount();
     error InvalidReleaseTime();
     error TransferNotFound();
@@ -43,7 +42,6 @@ contract SafeSend is Initializable, PausableUpgradeable, AccessControlUpgradeabl
     error UnauthorizedSender();
     error CancellationWindowClosed();
     error ReleaseTimeNotReached();
-    error InvalidFeeRecipient();
     error InvalidFeeBps();
 
     event SafeSendCreated(
@@ -81,9 +79,7 @@ contract SafeSend is Initializable, PausableUpgradeable, AccessControlUpgradeabl
         __Pausable_init();
         __AccessControl_init();
 
-        if (admin == address(0)) {
-            revert InvalidRecipient();
-        }
+        _checkIsValidAddress(admin);
 
         _setFeeConfig(feeRecipient_, feeBps_);
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
@@ -98,18 +94,10 @@ contract SafeSend is Initializable, PausableUpgradeable, AccessControlUpgradeabl
         uint256 amount,
         uint256 releaseTime
     ) external nonReentrant returns (uint256 transferId) {
-        if (recipient == address(0)) {
-            revert InvalidRecipient();
-        }
-        if (token == address(0)) {
-            revert InvalidToken();
-        }
-        if (amount == 0) {
-            revert InvalidAmount();
-        }
-        if (releaseTime <= block.timestamp) {
-            revert InvalidReleaseTime();
-        }
+        _checkIsValidAddress(recipient);
+        _checkIsValidAddress(token);
+        require(amount != 0, InvalidAmount());
+        require(releaseTime > block.timestamp, InvalidReleaseTime());
 
         transferId = _nextTransferId++;
         uint256 feeAmount = previewFee(amount);
@@ -141,12 +129,8 @@ contract SafeSend is Initializable, PausableUpgradeable, AccessControlUpgradeabl
     function cancelSafeSend(uint256 transferId) external nonReentrant {
         SafeSendTransfer storage transfer = _getPendingTransfer(transferId);
 
-        if (transfer.sender != msg.sender) {
-            revert UnauthorizedSender();
-        }
-        if (block.timestamp >= transfer.releaseTime) {
-            revert CancellationWindowClosed();
-        }
+        require(transfer.sender == msg.sender, UnauthorizedSender());
+        require(block.timestamp < transfer.releaseTime, CancellationWindowClosed());
 
         transfer.status = SafeSendStatus.Cancelled;
         IERC20(transfer.token).safeTransfer(transfer.sender, transfer.amount);
@@ -159,9 +143,7 @@ contract SafeSend is Initializable, PausableUpgradeable, AccessControlUpgradeabl
     function releaseSafeSend(uint256 transferId) external nonReentrant {
         SafeSendTransfer storage transfer = _getPendingTransfer(transferId);
 
-        if (block.timestamp < transfer.releaseTime) {
-            revert ReleaseTimeNotReached();
-        }
+        require(block.timestamp >= transfer.releaseTime, ReleaseTimeNotReached());
 
         transfer.status = SafeSendStatus.Released;
 
@@ -188,12 +170,7 @@ contract SafeSend is Initializable, PausableUpgradeable, AccessControlUpgradeabl
         view
         returns (SafeSendTransfer memory)
     {
-        SafeSendTransfer memory transfer = _transfers[transferId];
-        if (transfer.sender == address(0)) {
-            revert TransferNotFound();
-        }
-
-        return transfer;
+        return _getTransfer(transferId);
     }
 
     /// @notice Updates the platform fee configuration.
@@ -210,12 +187,8 @@ contract SafeSend is Initializable, PausableUpgradeable, AccessControlUpgradeabl
     }
 
     function _setFeeConfig(address feeRecipient_, uint256 feeBps_) internal {
-        if (feeRecipient_ == address(0)) {
-            revert InvalidFeeRecipient();
-        }
-        if (feeBps_ >= BPS_DENOMINATOR) {
-            revert InvalidFeeBps();
-        }
+        _checkIsValidAddress(feeRecipient_);
+        require(feeBps_ < BPS_DENOMINATOR, InvalidFeeBps());
 
         _feeRecipient = feeRecipient_;
         _feeBps = feeBps_;
@@ -226,13 +199,25 @@ contract SafeSend is Initializable, PausableUpgradeable, AccessControlUpgradeabl
     function _getPendingTransfer(
         uint256 transferId
     ) internal view returns (SafeSendTransfer storage transfer) {
+        transfer = _getTransfer(transferId);
+        require(transfer.status == SafeSendStatus.Pending, TransferNotPending());
+    }
+
+    function _getTransfer(
+        uint256 transferId
+    ) private view returns (SafeSendTransfer storage transfer) {
         transfer = _transfers[transferId];
-        if (transfer.sender == address(0)) {
-            revert TransferNotFound();
-        }
-        if (transfer.status != SafeSendStatus.Pending) {
-            revert TransferNotPending();
-        }
+        _checkTransferExists(transfer);
+    }
+
+    function _checkIsValidAddress(address addr) private pure {
+        require(addr != address(0), InvalidAddress());
+    }
+
+    function _checkTransferExists(
+        SafeSendTransfer storage transfer
+    ) private view {
+        require(transfer.sender != address(0), TransferNotFound());
     }
 
     function pause() public onlyRole(PAUSER_ROLE) {
