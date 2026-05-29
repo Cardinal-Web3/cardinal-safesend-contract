@@ -36,6 +36,12 @@ export default defineConfig({
       url: RPC_URL,
       accounts: [PRIVATE_KEY],
     },
+    arbSepolia: {
+      type: "http",
+      chainType: "l1",
+      url: RPC_URL,
+      accounts: [PRIVATE_KEY],
+    },
   },
   verify: {
     etherscan: {
