@@ -1,6 +1,5 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 import { requiredEnv } from "../../utils/utils.js";
-import { log } from "node:console";
 
 const admin = requiredEnv("SAFESEND_ADMIN");
 const feeRecipient = requiredEnv("SAFESEND_FEE_RECIPIENT");
