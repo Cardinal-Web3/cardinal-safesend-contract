@@ -61,6 +61,7 @@ contract SafeSend is Initializable, PausableUpgradeable, AccessControlUpgradeabl
         uint256 feeAmount
     );
     event FeeConfigUpdated(address indexed feeRecipient, uint256 feeBps);
+    event OwnershipTransferred(address indexed previousAdmin, address indexed newAdmin);
 
     mapping(uint256 => SafeSendTransfer) private _transfers;
     uint256 public _nextTransferId;
@@ -84,6 +85,8 @@ contract SafeSend is Initializable, PausableUpgradeable, AccessControlUpgradeabl
         _setFeeConfig(feeRecipient_, feeBps_);
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(FEE_MANAGER_ROLE, admin);
+        _grantRole(PAUSER_ROLE, admin);
+        _grantRole(UPGRADER_ROLE, admin);
     }
 
     /// @notice Creates a protected ERC20 transfer with a delayed release time.
@@ -162,6 +165,23 @@ contract SafeSend is Initializable, PausableUpgradeable, AccessControlUpgradeabl
             recipientAmount,
             transfer.feeAmount
         );
+    }
+
+    function transferOwnership(address newAdmin) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        address oldAdmin = msg.sender;
+        _checkIsValidAddress(newAdmin);
+        
+        grantRole(DEFAULT_ADMIN_ROLE, newAdmin);
+        grantRole(FEE_MANAGER_ROLE, newAdmin);
+        grantRole(PAUSER_ROLE, newAdmin);
+        grantRole(UPGRADER_ROLE, newAdmin);
+        
+        renounceRole(DEFAULT_ADMIN_ROLE, oldAdmin);
+        renounceRole(FEE_MANAGER_ROLE, oldAdmin);
+        renounceRole(PAUSER_ROLE, oldAdmin);
+        renounceRole(UPGRADER_ROLE, oldAdmin);
+
+        emit OwnershipTransferred(oldAdmin, newAdmin);
     }
 
     /// @notice Returns the stored transfer data for a Safe Send.
