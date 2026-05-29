@@ -7,6 +7,7 @@ export default buildModule("UpgradeModule", (m) => {
 
   const safeSendUpdatedImplementation = m.contract("SafeSend", [], {
     id: "UpdatedImplementation",
+    after: [SafeSendModule],
   });
 
   m.call(
