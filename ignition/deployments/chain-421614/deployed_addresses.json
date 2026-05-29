@@ -1,6 +1,6 @@
 {
-  "DeployModule#Implementation": "0xa0F99B60770ecE82e953b1Bb34ec718a2c2e5f41",
-  "DeployModule#ERC1967Proxy": "0x527F7251C001B8D9Baf60Dd54e3372d0d5F10A49",
-  "DeployModule#Proxy": "0x527F7251C001B8D9Baf60Dd54e3372d0d5F10A49",
-  "UpgradeModule#UpdatedImplementation": "0x4b09bB86Ab85963eE1819cd3Db4BE5C4177878B2"
+  "DeployModule#Implementation": "0xf4E6DB4254F41c36B5165Efa0ca7ABC2177A4515",
+  "DeployModule#ERC1967Proxy": "0xC2b58B0CB938d35836E5a4E34b79Bd5E8EcD8f78",
+  "DeployModule#Proxy": "0xC2b58B0CB938d35836E5a4E34b79Bd5E8EcD8f78",
+  "UpgradeModule#UpdatedImplementation": "0x7974cCF0B7af95b0eb66Ca25354E748925E35e29"
 }
