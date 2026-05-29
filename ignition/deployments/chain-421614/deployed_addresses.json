@@ -2,5 +2,5 @@
   "DeployModule#Implementation": "0xf4E6DB4254F41c36B5165Efa0ca7ABC2177A4515",
   "DeployModule#ERC1967Proxy": "0xC2b58B0CB938d35836E5a4E34b79Bd5E8EcD8f78",
   "DeployModule#Proxy": "0xC2b58B0CB938d35836E5a4E34b79Bd5E8EcD8f78",
-  "UpgradeModule#UpdatedImplementation": "0x7974cCF0B7af95b0eb66Ca25354E748925E35e29"
+  "UpgradeModule#UpdatedImplementation": "0x5007149Fc40F706c2d07FDa7b3D3a7ec213d2Cd6"
 }
