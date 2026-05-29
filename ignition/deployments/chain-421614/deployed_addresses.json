@@ -1,5 +1,6 @@
 {
   "DeployModule#Implementation": "0xa0F99B60770ecE82e953b1Bb34ec718a2c2e5f41",
   "DeployModule#ERC1967Proxy": "0x527F7251C001B8D9Baf60Dd54e3372d0d5F10A49",
-  "DeployModule#Proxy": "0x527F7251C001B8D9Baf60Dd54e3372d0d5F10A49"
+  "DeployModule#Proxy": "0x527F7251C001B8D9Baf60Dd54e3372d0d5F10A49",
+  "UpgradeModule#UpdatedImplementation": "0x4b09bB86Ab85963eE1819cd3Db4BE5C4177878B2"
 }
