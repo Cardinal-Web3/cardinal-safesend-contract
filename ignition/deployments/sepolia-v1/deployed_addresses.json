@@ -1,0 +1,5 @@
+{
+  "SafeSendModule#SafeSendImplementation": "0xF308561822d56065FCc62787f2b0a34d82145462",
+  "SafeSendModule#SafeSendERC1967Proxy": "0x721f9C23880e20fD907755c7aDeb1116EE3B1a65",
+  "SafeSendModule#SafeSendProxy": "0x721f9C23880e20fD907755c7aDeb1116EE3B1a65"
+}
