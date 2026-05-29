@@ -1,9 +1,19 @@
 import hardhatToolboxMochaEthersPlugin from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
-import { configVariable, defineConfig } from "hardhat/config";
+import { defineConfig } from "hardhat/config";
+import { requiredEnv } from "./utils/utils.js";
+import dotenv from "dotenv";
+dotenv.config();
+
+const PRIVATE_KEY = requiredEnv("PRIVATE_KEY");
+const RPC_URL = requiredEnv("RPC_URL");
+const ETHERSCAN_API_KEY = requiredEnv("ETHERSCAN_API_KEY");
 
 export default defineConfig({
   plugins: [hardhatToolboxMochaEthersPlugin],
   solidity: {
+    npmFilesToBuild: [
+      "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol",
+    ],
     profiles: {
       default: {
         version: "0.8.28",
@@ -20,19 +30,22 @@ export default defineConfig({
     },
   },
   networks: {
-    hardhatMainnet: {
-      type: "edr-simulated",
-      chainType: "l1",
-    },
-    hardhatOp: {
-      type: "edr-simulated",
-      chainType: "op",
-    },
     sepolia: {
       type: "http",
       chainType: "l1",
-      url: configVariable("SEPOLIA_RPC_URL"),
-      accounts: [configVariable("SEPOLIA_PRIVATE_KEY")],
+      url: RPC_URL,
+      accounts: [PRIVATE_KEY],
     },
+  },
+  verify: {
+    etherscan: {
+      apiKey: ETHERSCAN_API_KEY,
+    },
+    sourcify: {
+      enabled: true,
+    },
+    blockscout: {
+      enabled: true,
+    }
   },
 });
